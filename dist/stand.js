@@ -82,6 +82,13 @@ function allCircle(paper, conf) {
     paper.circle(conf.centerX, conf.centerY, conf.fr)
   );
 
+  st.glow({
+    width: 1,
+    offsety: 3,
+    offsetx: -2,
+    opacity: 0.3
+  });
+
   return st;
 }
 
@@ -306,7 +313,7 @@ function levleArea(paper, conf) {
   // Draw the area
   var area = paper.path(originalPath+'Z').animate({path: path+'Z'}, 1500, 'easeOut');
 
-  area.attr('fill', '#ddd')
+  area.attr('fill', data.theme).attr('fill-opacity', 0.3);
   area.toBack();
 }
   return Stand;
