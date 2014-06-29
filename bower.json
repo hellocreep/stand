@@ -6,7 +6,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "requirejs": "~2.1.14",
     "raphael": "~2.1.2",
     "underscore": "~1.6.0"
   }

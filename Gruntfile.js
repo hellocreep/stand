@@ -2,26 +2,33 @@ module.exports = function(grunt) {
   grunt.initConfig({
     watch: {
       js: {
-        files: ['js/src/*.js'],
+        files: ['src/*.js'],
         tasks: ['build']
       }
     },
     concat: {
       dist: {
         src: [
-          'js/src/intro.js',
-          'js/src/utils.js',
-          'js/src/stand.js',
-          'js/src/init.js',
-          'js/src/graph.js',
-          'js/src/outro.js'
+          'src/intro.js',
+          'src/utils.js',
+          'src/stand.js',
+          'src/init.js',
+          'src/graph.js',
+          'src/outro.js'
         ],
-        dest: 'js/dist/stand.js'
+        dest: 'dist/stand.js'
+      }
+    },
+    uglify: {
+      target: {
+        files: {
+          'stand.min.js': ['dist/stand.js']
+        }
       }
     }
   });
 
-  grunt.registerTask('build', ['concat']);
+  grunt.registerTask('build', ['concat', 'uglify']);
 
   require('load-grunt-tasks')(grunt);
 }
