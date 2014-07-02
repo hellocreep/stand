@@ -1,24 +1,41 @@
 function circleAaxis(opts, cb) {
-  var X = opts.centerX,
-      Y = opts.centerY,
-      count = opts.count,
-      deg = opts.deg,
-      r = opts.r;
+  var X     = opts.centerX;
+  var Y     = opts.centerY;
+  var count = opts.count;
+  var deg   = opts.deg;
+  var r     = opts.r;
 
   for(var i = 0; i < count; i++) {
-    var rad = (2 * Math.PI / 360) * deg * i,
-      x = X + Math.sin(rad) * r,
-      y = Y - Math.cos(rad) * r;
+    var rad, x, y;
+
+    rad = (2 * Math.PI / 360) * deg * i;
+    x   = X + Math.sin(rad) * r;
+    y   = Y - Math.cos(rad) * r;
 
     cb(x, y, i);
   }
 }
 
 function getLinePath(args) {
-  var from = args.from.toString().replace(',', ' '),
-    to = args.to.toString().replace(',', ' ');
+  var getPath = function(type, paths) {
+    return paths[type] ? paths[type].toString().replace(',', ' ') : false;
+  }
 
-  return 'M' + from + 'L' + to;
+  var from     = getPath('from', args);
+  var to       = getPath('to', args);
+  var pathFrom = 'M' + from;
+  var pathTo   = 'L' + to;
+  var path;
+
+  if(!from) {
+    path = pathTo;
+  } else if(!to) {
+    path = pathFrom;
+  } else {
+    path = pathFrom + pathTo;
+  }
+
+  return path;
 }
 
 function generateCode(data) {

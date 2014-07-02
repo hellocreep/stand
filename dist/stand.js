@@ -6,26 +6,43 @@
   }
 })(function(Raphael, underscore) {
 function circleAaxis(opts, cb) {
-  var X = opts.centerX,
-      Y = opts.centerY,
-      count = opts.count,
-      deg = opts.deg,
-      r = opts.r;
+  var X     = opts.centerX;
+  var Y     = opts.centerY;
+  var count = opts.count;
+  var deg   = opts.deg;
+  var r     = opts.r;
 
   for(var i = 0; i < count; i++) {
-    var rad = (2 * Math.PI / 360) * deg * i,
-      x = X + Math.sin(rad) * r,
-      y = Y - Math.cos(rad) * r;
+    var rad, x, y;
+
+    rad = (2 * Math.PI / 360) * deg * i;
+    x   = X + Math.sin(rad) * r;
+    y   = Y - Math.cos(rad) * r;
 
     cb(x, y, i);
   }
 }
 
 function getLinePath(args) {
-  var from = args.from.toString().replace(',', ' '),
-    to = args.to.toString().replace(',', ' ');
+  var getPath = function(type, paths) {
+    return paths[type] ? paths[type].toString().replace(',', ' ') : false;
+  }
 
-  return 'M' + from + 'L' + to;
+  var from     = getPath('from', args);
+  var to       = getPath('to', args);
+  var pathFrom = 'M' + from;
+  var pathTo   = 'L' + to;
+  var path;
+
+  if(!from) {
+    path = pathTo;
+  } else if(!to) {
+    path = pathFrom;
+  } else {
+    path = pathFrom + pathTo;
+  }
+
+  return path;
 }
 
 function generateCode(data) {
@@ -37,44 +54,53 @@ function generateCode(data) {
 }
 function Stand(opts) {
   this.conf = _.extend(Stand.DEFAULTS, opts);
-  var paper = this.init(this.conf),
-    conf = this.conf;
 
-  var st = allCircle(paper, conf);
-  decoratorFigure(paper, conf);
+  this.init(this.conf),
 
-  innerLine(paper, st, conf);
-  levleFigure(paper, st, conf);
+  this.allCircle()
+    .innerLine()
+    .levelFigure()
+    .levelStatus();
 
-  st.attr('stroke-width', 1.5);
+  this.circleSet.attr('stroke-width', 1.5);
 
-  levleStatus(paper, conf)
-  levleArea(paper, conf)
+  this.decoratorFigure()
+    .levelArea()
 }
 
 Stand.DEFAULTS = {
-  id: 'main',
+  container: 'main',
   centerX: 200,
   centerY: 200,
   count: 6,
   r: 150, // Outter circle radius
   width: 980,
   height: 600,
-  levleTotal: 5,
+  levelTotal: 5,
   figureCount: 20
 }
 Stand.prototype.init = function(conf) {
-  conf.sr = conf.r - 10; // Second circle radius
-  conf.fr = conf.r / 1.6; // First inner circle radius
-  conf.deg = 360 / conf.count;
-  conf.levleWidth = conf.fr / (conf.levleTotal + 1);
-  conf.levelCode = generateCode(conf.data.status);
-  this.paper = Raphael(conf.id, conf.width, conf.height);
+  conf.sr         = conf.r - 10; // Second circle radius
+  conf.fr         = conf.r / 1.6; // First inner circle radius
+  conf.deg        = 360 / conf.count;
+  conf.levelWidth = conf.fr / (conf.levelTotal + 1);
+  conf.levelCode  = generateCode(conf.data.status);
+  this.paper      = Raphael(conf.container, conf.width, conf.height);
 
   return this.paper;
 }
-function allCircle(paper, conf) {
-  var st = paper.set();
+Stand.prototype.update = function(data) {
+  this.conf.data = data;
+  this.decoratorFigure()
+    .levelStatus()
+    .levelArea();
+}
+Stand.prototype.allCircle = function() {
+  var paper = this.paper;
+  var conf  = this.conf;
+  var st;
+
+  st = paper.set();
   // Draw three cicle
   st.push(
     paper.circle(conf.centerX, conf.centerY, conf.r),
@@ -82,6 +108,7 @@ function allCircle(paper, conf) {
     paper.circle(conf.centerX, conf.centerY, conf.fr)
   );
 
+  // Shawdow
   st.glow({
     width: 1,
     offsety: 3,
@@ -89,106 +116,16 @@ function allCircle(paper, conf) {
     opacity: 0.3
   });
 
-  return st;
+  this.circleSet = st;
+
+  return this;
 }
 
-function decoratorFigure(paper, conf) {
-  // Decorator figure
-  var dfSet = paper.set(),
-    dfSetCopy = paper.set(),
-    fakePoints = [], // Fake circle between middle circle and outter circle
-    ocPoints = [], // Outter circle points
-    mcPoints = []; // Middle circle pints
+Stand.prototype.innerLine = function() {
+  var paper = this.paper;
+  var conf  = this.conf;
+  var st    = this.circleSet;
 
-  // Get outter circle points
-  circleAaxis({
-    centerX: conf.centerX,
-    centerY: conf.centerY,
-    count: conf.figureCount,
-    deg: 360 / conf.figureCount,
-    r: conf.r
-  }, function(x, y) {
-    ocPoints.push({
-      x: x,
-      y: y
-    })
-  });
-
-  // Get middle circle points
-  circleAaxis({
-    centerX: conf.centerX,
-    centerY: conf.centerY,
-    count: conf.figureCount,
-    deg: 360 / conf.figureCount,
-    r: conf.sr
-  }, function(x, y) {
-    mcPoints.push({
-      x: x,
-      y: y
-    })
-  });
-
-  circleAaxis({
-    centerX: conf.centerX,
-    centerY: conf.centerY,
-    count: conf.figureCount,
-    deg: 360 / conf.figureCount,
-    r: conf.r - 5
-  }, function(x, y) {
-    fakePoints.push({
-      x: x,
-      y: y
-    })
-  });
-
-  // Draw figure
-  for(var i = 0; i < 20; i++) {
-    var path = getLinePath({
-        from: [mcPoints[i].x, mcPoints[i].y],
-        to: [fakePoints[i].x, fakePoints[i].y]
-      }),
-      outterPath = getLinePath({
-        from: [fakePoints[i].x, fakePoints[i].y],
-        to: [ocPoints[i].x, ocPoints[i].y]
-      });
-    dfSet.push(
-      paper.path(path)
-    );
-    dfSetCopy.push(
-      paper.path(outterPath)
-    )
-  }
-  dfSet.attr('stroke-width', 5);
-  dfSetCopy.attr('stroke-width', 5);
-
-  var roundTime = 0;
-  var round = function(duration) {
-    if(roundTime > 10) return;
-    setTimeout(function() {
-      round(roundTime*3 + 100);
-    }, duration + 30);
-    dfSet.forEach(function(obj, index) {
-      var f1 = dfSet[index];
-      var f2 = dfSetCopy[index];
-
-      var next = (index + 1) == dfSet.length ? dfSet[0] : dfSet[index+1];
-      var prev = index == 0 ? dfSetCopy[dfSetCopy.length - 1] : dfSetCopy[index-1];
-
-      f1.animate({
-        path: next.attr('path')[0].toString().replace(',', ' ') + next.attr('path')[1].toString().replace(',', ' ')
-      }, duration, 'easeOut');
-      f2.animate({
-        path: prev.attr('path')[0].toString().replace(',', ' ') + prev.attr('path')[1].toString().replace(',', ' ')
-      }, duration, 'easeOut');
-    });
-
-    roundTime++;
-  }
-
-  round(80);
-}
-
-function innerLine(paper, st, conf) {
   // Draw line in inner circle
   circleAaxis({
     centerX: conf.centerX,
@@ -206,14 +143,18 @@ function innerLine(paper, st, conf) {
     );
   });
 
-  return st;
+  return this;
 }
 
-function levleFigure(paper, st, conf) {
+Stand.prototype.levelFigure = function() {
+  var paper = this.paper;
+  var conf  = this.conf;
+  var st    = this.circleSet;
+
   // Draw level figure on every line
   conf.levelArr = [];
-  for(var level = 0; level < conf.levleTotal; level++) {
-    var len = conf.levleWidth * (level + 1);
+  for(var level = 0; level < conf.levelTotal; level++) {
+    var len = conf.levelWidth * (level + 1);
     circleAaxis({
       centerX: conf.centerX,
       centerY: conf.centerY,
@@ -232,12 +173,26 @@ function levleFigure(paper, st, conf) {
       )
     });
   }
+
+  return this;
 }
 
-function levleStatus(paper, conf) {
+Stand.prototype.levelStatus =  function() {
+  var paper = this.paper;
+  var conf  = this.conf;
+  var SLSet, SNSet;
+
   // Get status name and side
   var statusName  = _.keys(conf.data.status);
   var statusLelve = _.values(conf.data.status);
+
+  if(this.SLSet && this.SNSet) {
+    this.SLSet.remove();
+    this.SNSet.remove();
+  }
+
+  SLSet = paper.set();
+  SNSet = paper.set();
 
   // Draw status level on every side
   circleAaxis({
@@ -247,9 +202,15 @@ function levleStatus(paper, conf) {
     deg: conf.deg,
     r: conf.r - 40
   }, function(x, y, index) {
-    var t = conf.levelCode.charAt(statusLelve[index] - 1);
-    paper.text(x, y, t)
-      .attr('font-size', 18).attr('font-weight', 'bold');
+    var level = conf.levelCode.charAt(statusLelve[index] - 1);
+    SLSet.push(
+      paper.text(x, y, level)
+    );
+  });
+
+  this.SLSet = SLSet.attr({
+    'font-size': 18,
+    'font-weight': 'bold'
   });
 
   // Draw status name on every side
@@ -260,36 +221,174 @@ function levleStatus(paper, conf) {
     deg: conf.deg,
     r: conf.r - 20
   }, function(x, y, index) {
-    var t = statusName[index],
-      rotateDeg = index * conf.deg;
+    var name      = statusName[index];
+    var rotateDeg = index * conf.deg;
 
     if(rotateDeg >= 90 && rotateDeg <= 270) {
       rotateDeg -= 180;
     }
-    paper.text(x, y, t).attr('font-weight', 'bold').transform('r' + rotateDeg);
+    SNSet.push(
+      paper.text(x, y, name).transform('r' + rotateDeg)
+    );
   });
+
+  this.SNSet = SNSet.attr('font-weight', 'bold');
+
+  return this;
+}
+Stand.prototype.decoratorFigure = function() {
+  if(this.dfInnerSet && this.dfOutterSet) {
+    this.dfInnerSet.remove();
+    this.dfOutterSet.remove();
+  }
+
+  // Decorator figure
+  var paper = this.paper;
+  var conf  = this.conf;
+
+  var centerX     = conf.centerX;
+  var centerY     = conf.centerY;
+  var count       = conf.count;
+  var deg         = conf.deg;
+  var r           = conf.r;
+  var sr          = conf.sr;
+  var figureCount = conf.figureCount;
+
+  var dfInnerSet  = paper.set();
+  var dfOutterSet = paper.set();
+  var segPoints   = []; // Circle between middle circle and outter circle
+  var ocPoints    = []; // Outter circle points
+  var mcPoints    = []; // Middle circle pints
+
+  // Get outter circle points
+  circleAaxis({
+    centerX: centerX,
+    centerY: centerY,
+    count: figureCount,
+    deg: 360 / figureCount,
+    r: r
+  }, function(x, y) {
+    ocPoints.push({
+      x: x,
+      y: y
+    })
+  });
+
+  // Get middle circle points
+  circleAaxis({
+    centerX: centerX,
+    centerY: centerY,
+    count: figureCount,
+    deg: 360 / figureCount,
+    r: sr
+  }, function(x, y) {
+    mcPoints.push({
+      x: x,
+      y: y
+    })
+  });
+
+  // Get the points between outter circle and inner circle
+  circleAaxis({
+    centerX: centerX,
+    centerY: centerY,
+    count: figureCount,
+    deg: 360 / figureCount,
+    r: r - 5
+  }, function(x, y) {
+    segPoints.push({
+      x: x,
+      y: y
+    })
+  });
+
+  // Draw figure
+  for(var i = 0; i < conf.figureCount; i++) {
+    var path, outterPath;
+
+    path = getLinePath({
+        from: [mcPoints[i].x, mcPoints[i].y],
+        to: [segPoints[i].x, segPoints[i].y]
+      });
+
+    outterPath = getLinePath({
+        from: [segPoints[i].x, segPoints[i].y],
+        to: [ocPoints[i].x, ocPoints[i].y]
+      });
+
+    dfInnerSet.push(
+      paper.path(path)
+    );
+    dfOutterSet.push(
+      paper.path(outterPath)
+    )
+  }
+
+  this.dfInnerSet  = dfInnerSet.attr('stroke-width', 5);
+  this.dfOutterSet = dfOutterSet.attr('stroke-width', 5);
+
+  var roundTime = 0;
+  var round = function(duration) {
+    if(roundTime > 10) return;
+
+    setTimeout(function() {
+      round(roundTime*3 + 100);
+    }, duration + 30);
+
+    dfInnerSet.forEach(function(obj, index) {
+      var f1 = dfInnerSet[index];
+      var f2 = dfOutterSet[index];
+
+      var next = (index + 1) == dfInnerSet.length ? dfInnerSet[0] : dfInnerSet[index+1];
+      var prev = index == 0 ? dfOutterSet[dfOutterSet.length - 1] : dfOutterSet[index-1];
+
+      f1.animate({
+        path: next.attr('path')[0].toString().replace(',', ' ') + next.attr('path')[1].toString().replace(',', ' ')
+      }, duration, 'easeOut');
+
+      f2.animate({
+        path: prev.attr('path')[0].toString().replace(',', ' ') + prev.attr('path')[1].toString().replace(',', ' ')
+      }, duration, 'easeOut');
+
+    });
+
+    roundTime++;
+  }
+
+  round(80);
+
+  return this;
 }
 
-function levleArea(paper, conf) {
-  var centerX    = conf.centerX,
-  centerY    = conf.centerY,
-  count      = conf.count,
-  deg        = conf.deg,
-  r          = conf.r,
-  levleWidth = conf.levleWidth,
-  levleTotal = conf.levleTotal,
-  levelArr   = conf.levelArr,
-  data       = conf.data;
+Stand.prototype.levelArea = function() {
+  if(this.powerArea) {
+    this.powerArea.remove();
+  }
+
+  var paper = this.paper;
+  var conf  = this.conf;
+
+  var centerX    = conf.centerX;
+  var centerY    = conf.centerY;
+  var count      = conf.count;
+  var deg        = conf.deg;
+  var r          = conf.r;
+  var levelWidth = conf.levelWidth;
+  var levelTotal = conf.levelTotal;
+  var levelArr   = conf.levelArr;
+  var data       = conf.data;
+
   // Draw status area
-  var statusPoints = [],
-    firstLinePoints = [],
-    index = 1;
+  var statusPoints    = [];
+  var firstLinePoints = [];
+  var index           = 1;
 
   // Get the level point on every line
   for(var s in data.status) {
-    var levlel = data.status[s];
-    var levelPoint = levlel * count - (count - index) - 1
-    var point = levelArr[levelPoint];
+    var levell     = data.status[s];
+    var levelPoint = levell * count - (count - index) - 1
+    var point      = levelArr[levelPoint];
+
     firstLinePoints.push(levelArr[(index - 1) * count]);
     statusPoints.push(point);
     index++;
@@ -302,19 +401,37 @@ function levleArea(paper, conf) {
   }
 
   // Get the area path of inner circle
-  var originalPath = 'M' + centerX + ' ' + centerY;
+  // var originalPath = 'M' + centerX + ' ' + centerY;
+  var originalPath, path;
 
-  var path = 'M' + statusPoints[0].x.toString() + ' ' + statusPoints[0].y.toString();
+  originalPath = getLinePath({
+    from: [centerY, centerY]
+  });
+
+  path = getLinePath({
+    from: [statusPoints[0].x, statusPoints[0].y]
+  });
+
   for(var i = 1; i < statusPoints.length; i++) {
-    path += 'L' + statusPoints[i].x.toString() + ' ' + statusPoints[i].y.toString();
-    originalPath += 'L' + centerX + ' ' + centerY;
+    path += getLinePath({
+      to: [statusPoints[i].x, statusPoints[i].y]
+    });
+    originalPath += getLinePath({
+      to: [centerX, centerY]
+    });
   }
 
   // Draw the area
   var area = paper.path(originalPath+'Z').animate({path: path+'Z'}, 1500, 'easeOut');
 
-  area.attr('fill', data.theme).attr('fill-opacity', 0.3);
-  area.toBack();
+  area.attr({
+    'fill': data.theme,
+    'fill-opacity': 0.3
+  }).toBack();
+
+  this.powerArea = area;
+
+  return this;
 }
   return Stand;
 });

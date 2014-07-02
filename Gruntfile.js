@@ -13,7 +13,9 @@ module.exports = function(grunt) {
           'src/utils.js',
           'src/stand.js',
           'src/init.js',
+          'src/update.js',
           'src/graph.js',
+          'src/animate.js',
           'src/outro.js'
         ],
         dest: 'dist/stand.js'
