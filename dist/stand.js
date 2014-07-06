@@ -69,7 +69,7 @@ function Stand(opts) {
 }
 
 Stand.DEFAULTS = {
-  container: 'main',
+  container: 'stand',
   centerX: 200,
   centerY: 200,
   count: 6,
@@ -209,7 +209,7 @@ Stand.prototype.levelStatus =  function() {
   });
 
   this.SLSet = SLSet.attr({
-    'font-size': 18,
+    'font-size': '18',
     'font-weight': 'bold'
   });
 
@@ -363,6 +363,7 @@ Stand.prototype.decoratorFigure = function() {
 Stand.prototype.levelArea = function() {
   if(this.powerArea) {
     this.powerArea.remove();
+    this.firstLineSet.remove();
   }
 
   var paper = this.paper;
@@ -381,6 +382,7 @@ Stand.prototype.levelArea = function() {
   // Draw status area
   var statusPoints    = [];
   var firstLinePoints = [];
+  var firstLineSet    = paper.set();
   var index           = 1;
 
   // Get the level point on every line
@@ -396,16 +398,19 @@ Stand.prototype.levelArea = function() {
 
   // Draw figure on the first line
   for(var j = 0; j < firstLinePoints.length - 1; j++) {
-    var t = conf.levelCode.charAt(j);
-    paper.text(firstLinePoints[j].x + 5, firstLinePoints[j].y, t).attr('font-size', 10);
+    var t      = conf.levelCode.charAt(j);
+    var figure = paper.text(firstLinePoints[j].x + 8, firstLinePoints[j].y - 3, t);
+    firstLineSet.push(figure);
   }
+
+  firstLineSet.attr('font-size', 10);
 
   // Get the area path of inner circle
   // var originalPath = 'M' + centerX + ' ' + centerY;
   var originalPath, path;
 
   originalPath = getLinePath({
-    from: [centerY, centerY]
+    from: [centerX, centerY]
   });
 
   path = getLinePath({
@@ -430,6 +435,7 @@ Stand.prototype.levelArea = function() {
   }).toBack();
 
   this.powerArea = area;
+  this.firstLineSet = firstLineSet;
 
   return this;
 }

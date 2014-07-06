@@ -112,7 +112,7 @@ Stand.prototype.levelStatus =  function() {
   });
 
   this.SLSet = SLSet.attr({
-    'font-size': 18,
+    'font-size': '18',
     'font-weight': 'bold'
   });
 

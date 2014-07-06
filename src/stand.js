@@ -15,7 +15,7 @@ function Stand(opts) {
 }
 
 Stand.DEFAULTS = {
-  container: 'main',
+  container: 'stand',
   centerX: 200,
   centerY: 200,
   count: 6,
