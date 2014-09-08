@@ -86,10 +86,6 @@ function Stand(opts) {
   this.init(this.conf);
 }
 
-var dom = function(query) {
-  return document.querySelectorAll(query);
-}
-
 Stand.DEFAULTS = {
   adaptive: false,
   container: 'stand',
@@ -104,7 +100,7 @@ Stand.DEFAULTS = {
 }
 Stand.prototype.init = function(conf) {
   if(conf.adaptive) {
-    this.adapt(conf);
+    conf = this.adapt(conf);
   }
 
   conf.sr         = conf.r - 10; // Second circle radius
@@ -141,7 +137,6 @@ Stand.prototype.init = function(conf) {
       'font-size': 10
     },
     area: {
-      fill: conf.data.theme,
       'fill-opacity': 0.3
     }
   }
@@ -306,6 +301,7 @@ Stand.prototype.adapt = function(conf) {
   conf.centerX = container.clientWidth / 2;
   conf.centerY = container.clientHeight / 2;
   this.conf = conf;
+  return conf;
 }
 
 Stand.prototype.reDraw = function() {
@@ -504,7 +500,7 @@ Stand.prototype.levelArea = function() {
   // Draw the area
   var area = paper.path(originalPath+'Z').animate({path: path+'Z'}, 1500, 'easeOut');
 
-  area.attr(this.styles.area).toBack();
+  area.attr(utils.extend(this.styles.area, {fill: data.theme})).toBack();
 
   this.powerArea = area;
   this.firstLineSet = firstLineSet;

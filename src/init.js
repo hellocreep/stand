@@ -1,6 +1,6 @@
 Stand.prototype.init = function(conf) {
   if(conf.adaptive) {
-    this.adapt(conf);
+    conf = this.adapt(conf);
   }
 
   conf.sr         = conf.r - 10; // Second circle radius
@@ -37,7 +37,6 @@ Stand.prototype.init = function(conf) {
       'font-size': 10
     },
     area: {
-      fill: conf.data.theme,
       'fill-opacity': 0.3
     }
   }

@@ -3,10 +3,6 @@ function Stand(opts) {
   this.init(this.conf);
 }
 
-var dom = function(query) {
-  return document.querySelectorAll(query);
-}
-
 Stand.DEFAULTS = {
   adaptive: false,
   container: 'stand',

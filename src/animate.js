@@ -190,7 +190,7 @@ Stand.prototype.levelArea = function() {
   // Draw the area
   var area = paper.path(originalPath+'Z').animate({path: path+'Z'}, 1500, 'easeOut');
 
-  area.attr(this.styles.area).toBack();
+  area.attr(utils.extend(this.styles.area, {fill: data.theme})).toBack();
 
   this.powerArea = area;
   this.firstLineSet = firstLineSet;

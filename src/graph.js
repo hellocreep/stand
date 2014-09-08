@@ -140,6 +140,7 @@ Stand.prototype.adapt = function(conf) {
   conf.centerX = container.clientWidth / 2;
   conf.centerY = container.clientHeight / 2;
   this.conf = conf;
+  return conf;
 }
 
 Stand.prototype.reDraw = function() {
