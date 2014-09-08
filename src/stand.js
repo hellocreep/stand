@@ -1,20 +1,14 @@
 function Stand(opts) {
   this.conf = utils.extend(Stand.DEFAULTS, opts);
+  this.init(this.conf);
+}
 
-  this.init(this.conf),
-
-  this.allCircle()
-    .innerLine()
-    .levelFigure()
-    .levelStatus();
-
-  this.circleSet.attr('stroke-width', 1.5);
-
-  this.decoratorFigure()
-    .levelArea()
+var dom = function(query) {
+  return document.querySelectorAll(query);
 }
 
 Stand.DEFAULTS = {
+  adaptive: false,
   container: 'stand',
   centerX: 200,
   centerY: 200,

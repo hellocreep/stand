@@ -86,8 +86,8 @@ Stand.prototype.decoratorFigure = function() {
     )
   }
 
-  this.dfInnerSet  = dfInnerSet.attr('stroke-width', 5);
-  this.dfOutterSet = dfOutterSet.attr('stroke-width', 5);
+  this.dfInnerSet  = dfInnerSet.attr(this.styles.innerFigure);
+  this.dfOutterSet = dfOutterSet.attr(this.styles.outterFigure);
 
   var roundTime = 0;
   var round = function(duration) {
@@ -165,10 +165,9 @@ Stand.prototype.levelArea = function() {
     firstLineSet.push(figure);
   }
 
-  firstLineSet.attr('font-size', 10);
+  firstLineSet.attr(this.styles.firstLineStatus);
 
   // Get the area path of inner circle
-  // var originalPath = 'M' + centerX + ' ' + centerY;
   var originalPath, path;
 
   originalPath = getLinePath({
@@ -191,10 +190,7 @@ Stand.prototype.levelArea = function() {
   // Draw the area
   var area = paper.path(originalPath+'Z').animate({path: path+'Z'}, 1500, 'easeOut');
 
-  area.attr({
-    'fill': data.theme,
-    'fill-opacity': 0.3
-  }).toBack();
+  area.attr(this.styles.area).toBack();
 
   this.powerArea = area;
   this.firstLineSet = firstLineSet;

@@ -12,12 +12,7 @@ Stand.prototype.allCircle = function() {
   );
 
   // Shawdow
-  st.glow({
-    width: 1,
-    offsety: 3,
-    offsetx: -2,
-    opacity: 0.3
-  });
+  st.glow(this.styles.glow);
 
   this.circleSet = st;
 
@@ -111,10 +106,7 @@ Stand.prototype.levelStatus =  function() {
     );
   });
 
-  this.SLSet = SLSet.attr({
-    'font-size': '18',
-    'font-weight': 'bold'
-  });
+  this.SLSet = SLSet.attr(this.styles.SL);
 
   // Draw status name on every side
   circleAaxis({
@@ -135,7 +127,22 @@ Stand.prototype.levelStatus =  function() {
     );
   });
 
-  this.SNSet = SNSet.attr('font-weight', 'bold');
+  this.SNSet = SNSet.attr(this.styles.SN);
 
   return this;
+}
+
+Stand.prototype.adapt = function(conf) {
+  var container = document.querySelector('#' + conf.container);
+  conf.width = container.clientWidth;
+  conf.height = container.clientHeight;
+  conf.r = container.clientWidth / 4;
+  conf.centerX = container.clientWidth / 2;
+  conf.centerY = container.clientHeight / 2;
+  this.conf = conf;
+}
+
+Stand.prototype.reDraw = function() {
+  this.paper.remove();
+  this.init(this.conf);
 }

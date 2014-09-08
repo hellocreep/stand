@@ -43,7 +43,6 @@ stand.update(newData);
 ##Dependencies
 
 * raphael
-* underscore
 
 ##Build
 

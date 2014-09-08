@@ -1,12 +1,11 @@
 {
   "name": "stand",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "authors": [
     "hellocreep <hellocreep@gmail.com>"
   ],
   "license": "MIT",
   "dependencies": {
-    "raphael": "~2.1.2",
-    "underscore": "~1.6.0"
+    "raphael": "~2.1.2"
   }
 }

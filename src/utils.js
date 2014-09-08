@@ -40,7 +40,7 @@ function getLinePath(args) {
 
 function generateCode(data) {
   var levelCode = '';
-  for(var i = 65, len = _.keys(data).length; i < 64 + len; i++) {
+  for(var i = 65, len = utils.keys(data).length; i < 64 + len; i++) {
     levelCode += String.fromCharCode(i) + ' ';
   }
   return levelCode.trim().split(' ').reverse().toString().replace(/,/g, '');

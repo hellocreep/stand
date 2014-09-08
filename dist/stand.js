@@ -47,7 +47,7 @@ function getLinePath(args) {
 
 function generateCode(data) {
   var levelCode = '';
-  for(var i = 65, len = _.keys(data).length; i < 64 + len; i++) {
+  for(var i = 65, len = utils.keys(data).length; i < 64 + len; i++) {
     levelCode += String.fromCharCode(i) + ' ';
   }
   return levelCode.trim().split(' ').reverse().toString().replace(/,/g, '');
@@ -83,21 +83,15 @@ var utils = {
 }
 function Stand(opts) {
   this.conf = utils.extend(Stand.DEFAULTS, opts);
+  this.init(this.conf);
+}
 
-  this.init(this.conf),
-
-  this.allCircle()
-    .innerLine()
-    .levelFigure()
-    .levelStatus();
-
-  this.circleSet.attr('stroke-width', 1.5);
-
-  this.decoratorFigure()
-    .levelArea()
+var dom = function(query) {
+  return document.querySelectorAll(query);
 }
 
 Stand.DEFAULTS = {
+  adaptive: false,
   container: 'stand',
   centerX: 200,
   centerY: 200,
@@ -109,12 +103,58 @@ Stand.DEFAULTS = {
   figureCount: 20
 }
 Stand.prototype.init = function(conf) {
+  if(conf.adaptive) {
+    this.adapt(conf);
+  }
+
   conf.sr         = conf.r - 10; // Second circle radius
   conf.fr         = conf.r / 1.6; // First inner circle radius
   conf.deg        = 360 / conf.count;
   conf.levelWidth = conf.fr / (conf.levelTotal + 1);
   conf.levelCode  = generateCode(conf.data.status);
   this.paper      = Raphael(conf.container, conf.width, conf.height);
+
+  this.styles = {
+    circle: {
+      'stroke-width' : 1.5
+    },
+    glow: {
+      width: 1,
+      offsety: 3,
+      offsetx: -2,
+      opacity: 0.3
+    },
+    SL: {
+      'font-size': 18,
+      'font-weight': 'bold'
+    },
+    SN: {
+      'font-weight': 'bold'
+    },
+    innerFigure: {
+      'stroke-width': 5
+    },
+    outterFigure: {
+      'stroke-width': 5
+    },
+    firstLineStatus: {
+      'font-size': 10
+    },
+    area: {
+      fill: conf.data.theme,
+      'fill-opacity': 0.3
+    }
+  }
+
+  this.allCircle()
+    .innerLine()
+    .levelFigure()
+    .levelStatus();
+
+  this.circleSet.attr(this.styles.circle);
+
+  this.decoratorFigure()
+    .levelArea();
 
   return this.paper;
 }
@@ -138,12 +178,7 @@ Stand.prototype.allCircle = function() {
   );
 
   // Shawdow
-  st.glow({
-    width: 1,
-    offsety: 3,
-    offsetx: -2,
-    opacity: 0.3
-  });
+  st.glow(this.styles.glow);
 
   this.circleSet = st;
 
@@ -237,10 +272,7 @@ Stand.prototype.levelStatus =  function() {
     );
   });
 
-  this.SLSet = SLSet.attr({
-    'font-size': '18',
-    'font-weight': 'bold'
-  });
+  this.SLSet = SLSet.attr(this.styles.SL);
 
   // Draw status name on every side
   circleAaxis({
@@ -261,9 +293,24 @@ Stand.prototype.levelStatus =  function() {
     );
   });
 
-  this.SNSet = SNSet.attr('font-weight', 'bold');
+  this.SNSet = SNSet.attr(this.styles.SN);
 
   return this;
+}
+
+Stand.prototype.adapt = function(conf) {
+  var container = document.querySelector('#' + conf.container);
+  conf.width = container.clientWidth;
+  conf.height = container.clientHeight;
+  conf.r = container.clientWidth / 4;
+  conf.centerX = container.clientWidth / 2;
+  conf.centerY = container.clientHeight / 2;
+  this.conf = conf;
+}
+
+Stand.prototype.reDraw = function() {
+  this.paper.remove();
+  this.init(this.conf);
 }
 Stand.prototype.decoratorFigure = function() {
   if(this.dfInnerSet && this.dfOutterSet) {
@@ -353,8 +400,8 @@ Stand.prototype.decoratorFigure = function() {
     )
   }
 
-  this.dfInnerSet  = dfInnerSet.attr('stroke-width', 5);
-  this.dfOutterSet = dfOutterSet.attr('stroke-width', 5);
+  this.dfInnerSet  = dfInnerSet.attr(this.styles.innerFigure);
+  this.dfOutterSet = dfOutterSet.attr(this.styles.outterFigure);
 
   var roundTime = 0;
   var round = function(duration) {
@@ -432,10 +479,9 @@ Stand.prototype.levelArea = function() {
     firstLineSet.push(figure);
   }
 
-  firstLineSet.attr('font-size', 10);
+  firstLineSet.attr(this.styles.firstLineStatus);
 
   // Get the area path of inner circle
-  // var originalPath = 'M' + centerX + ' ' + centerY;
   var originalPath, path;
 
   originalPath = getLinePath({
@@ -458,10 +504,7 @@ Stand.prototype.levelArea = function() {
   // Draw the area
   var area = paper.path(originalPath+'Z').animate({path: path+'Z'}, 1500, 'easeOut');
 
-  area.attr({
-    'fill': data.theme,
-    'fill-opacity': 0.3
-  }).toBack();
+  area.attr(this.styles.area).toBack();
 
   this.powerArea = area;
   this.firstLineSet = firstLineSet;
