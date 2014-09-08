@@ -1,7 +1,7 @@
 ;(function(factory) {
   if(typeof define == 'function' && define.amd) {
-    define(['raphael', 'underscore'], factory);
+    define(['raphael'], factory);
   } else {
-    factory(Raphael, underscore);
+    factory(Raphael);
   }
-})(function(Raphael, underscore) {
+})(function(Raphael) {

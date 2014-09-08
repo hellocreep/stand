@@ -1,10 +1,10 @@
 ;(function(factory) {
   if(typeof define == 'function' && define.amd) {
-    define(['raphael', 'underscore'], factory);
+    define(['raphael'], factory);
   } else {
-    factory(Raphael, underscore);
+    factory(Raphael);
   }
-})(function(Raphael, underscore) {
+})(function(Raphael) {
 function circleAaxis(opts, cb) {
   var X     = opts.centerX;
   var Y     = opts.centerY;
@@ -52,8 +52,37 @@ function generateCode(data) {
   }
   return levelCode.trim().split(' ').reverse().toString().replace(/,/g, '');
 }
+
+var utils = {
+  extend: function(obj) {
+    for(var i = 0; i < arguments.length; i++) {
+      var source = arguments[i];
+      for(var prop in source) {
+        // 为什么要用call 而不直接用source.hasOwnProperty()？？
+        if(Object.prototype.hasOwnProperty.call(source, prop)) {
+          obj[prop] = source[prop];
+        }
+      }
+    }
+    return obj;
+  },
+  keys: function(obj) {
+    var keys = [];
+    for(var prop in obj) {
+      keys.push(prop);
+    }
+    return keys;
+  },
+  values: function(obj) {
+    var values = [];
+    for(var prop in obj) {
+      values.push(obj[prop]);
+    }
+    return values;
+  }
+}
 function Stand(opts) {
-  this.conf = _.extend(Stand.DEFAULTS, opts);
+  this.conf = utils.extend(Stand.DEFAULTS, opts);
 
   this.init(this.conf),
 
@@ -183,8 +212,8 @@ Stand.prototype.levelStatus =  function() {
   var SLSet, SNSet;
 
   // Get status name and side
-  var statusName  = _.keys(conf.data.status);
-  var statusLelve = _.values(conf.data.status);
+  var statusName  = utils.keys(conf.data.status);
+  var statusLelve = utils.values(conf.data.status);
 
   if(this.SLSet && this.SNSet) {
     this.SLSet.remove();

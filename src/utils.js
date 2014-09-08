@@ -45,3 +45,32 @@ function generateCode(data) {
   }
   return levelCode.trim().split(' ').reverse().toString().replace(/,/g, '');
 }
+
+var utils = {
+  extend: function(obj) {
+    for(var i = 0; i < arguments.length; i++) {
+      var source = arguments[i];
+      for(var prop in source) {
+        // 为什么要用call 而不直接用source.hasOwnProperty()？？
+        if(Object.prototype.hasOwnProperty.call(source, prop)) {
+          obj[prop] = source[prop];
+        }
+      }
+    }
+    return obj;
+  },
+  keys: function(obj) {
+    var keys = [];
+    for(var prop in obj) {
+      keys.push(prop);
+    }
+    return keys;
+  },
+  values: function(obj) {
+    var values = [];
+    for(var prop in obj) {
+      values.push(obj[prop]);
+    }
+    return values;
+  }
+}

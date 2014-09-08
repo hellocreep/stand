@@ -86,8 +86,8 @@ Stand.prototype.levelStatus =  function() {
   var SLSet, SNSet;
 
   // Get status name and side
-  var statusName  = _.keys(conf.data.status);
-  var statusLelve = _.values(conf.data.status);
+  var statusName  = utils.keys(conf.data.status);
+  var statusLelve = utils.values(conf.data.status);
 
   if(this.SLSet && this.SNSet) {
     this.SLSet.remove();

@@ -1,5 +1,5 @@
 function Stand(opts) {
-  this.conf = _.extend(Stand.DEFAULTS, opts);
+  this.conf = utils.extend(Stand.DEFAULTS, opts);
 
   this.init(this.conf),
 
